@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get User</title>
+</head>
+<body>
+<div id="get-user">
+    <h1 onclick="toggleButton()">Get User by ID</h1>
+
+    <form id="getUserForm">
+        <label for="userID">User ID:</label>
+        <input type="number" id="userID" name="userID" required><br>
+        <button type="button" onclick="getUserByID()">Get User</button>
+    </form>
+    <div id="userInfo">
+    </div>
+</div>
+
+<div id="delete-user">
+    <h1>Delete User by ID</h1>
+
+    <form id="deleteUserForm">
+        <label for="userID">User ID:</label>
+        <input type="number" id="userID" name="userID" required><br>
+
+        <button type="button" onclick="deleteUserByID()">Delete User</button>
+    </form>
+</div>
+
+<div id="update-name">
+    <h1>Update User Name by ID</h1>
+    <form id="updateUserNameForm">
+        <label for="userID">User ID:</label>
+        <input type="number" id="userID" name="userID" required><br>
+        <label for="newName">New Name:</label>
+        <input type="text" id="newName" name="newName" required><br>
+        <button type="button" onclick="updateUserNameByID()">Update User Name</button>
+    </form>
+</div>
+
+<button type="button" onclick="getAllUsers()">Get All Users</button>
+
+<script>
+    function getUserByID() {
+        var userID = document.getElementById("userID").value;
+
+        fetch('/get_user/' + toString(parseInt(userID)), {
+            method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("userInfo").innerHTML = '<p>ID: ' + data.ID + '</p>' +
+                '<p>Name: ' + data.Name + '</p>' +
+                '<p>Email: ' + data.Email + '</p>';
+        })
+        .catch((error) => {
+            alert('Error getting user');
+            console.error('Error:', error);
+        });
+    }
+</script>
+<script>
+    function getAllUsers() {
+            fetch('/getAllUsers', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Users:\n' + JSON.stringify(data, null, 2));
+            })
+            .catch((error) => {
+                alert('Error getting users');
+                console.error('Error:', error);
+            });
+        }
+</script>
+<script>
+    function deleteUserByID() {
+        var userID = document.getElementById("userID").value;
+
+        fetch('/deleteUser/' + userID, {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('User deleted successfully');
+        })
+        .catch((error) => {
+            alert('Error deleting user');
+            console.error('Error:', error);
+        });
+    }
+</script>
+<script>
+    function updateUserNameByID() {
+        var userID = document.getElementById("userID").value;
+        var newName = document.getElementById("newName").value;
+
+        fetch('/updateUserName/' + userID, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('User name updated successfully');
+        })
+        .catch((error) => {
+            alert('Error updating user name');
+            console.error('Error:', error);
+        });
+    }
+</script>
+</body>
+</html>
