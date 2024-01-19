@@ -1,7 +1,8 @@
 # assignment2go
 #need to add postgresql database
 ##query:
-```create table users (
+```postgres
+create table users (
 	id INT primary key,
 	name VARCHAR(255),
 	email VARCHAR(255),
