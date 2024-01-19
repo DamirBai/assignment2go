@@ -1,7 +1,7 @@
 # assignment2go
-need to add postgresql database
-query:
-create table users (
+#need to add postgresql database
+##query:
+```create table users (
 	id INT primary key,
 	name VARCHAR(255),
 	email VARCHAR(255),
@@ -10,4 +10,4 @@ create table users (
 	created_at timestamp(6),
 	updated_at timestamp(6),
 	deleted_at timestamp(6)
-)
+)```
