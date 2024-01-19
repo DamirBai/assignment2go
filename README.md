@@ -1,6 +1,6 @@
 # assignment2go
-#need to add postgresql database
-##query:
+# need to add postgresql database
+## query:
 ```postgresql
 create table users (
 	id INT primary key,
