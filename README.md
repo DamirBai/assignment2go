@@ -1,7 +1,7 @@
 # assignment2go
 #need to add postgresql database
 ##query:
-```postgres
+```postgresql
 create table users (
 	id INT primary key,
 	name VARCHAR(255),
@@ -11,4 +11,5 @@ create table users (
 	created_at timestamp(6),
 	updated_at timestamp(6),
 	deleted_at timestamp(6)
-)```
+)
+```
