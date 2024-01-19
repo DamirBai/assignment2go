@@ -1,5 +1,5 @@
 # assignment2go
-# need to add postgresql database
+need to add postgresql database
 ## query:
 ```postgresql
 create table users (
