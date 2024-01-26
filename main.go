@@ -49,6 +49,12 @@ func UserHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderGetHTMLPage(w, "user.html", user)
 }
+func DeleteUserHTMLHandler(w http.ResponseWriter, r *http.Request) {
+	renderHTMLPage(w, "delete_user.html")
+}
+func UpdateNameHTMLHandler(w http.ResponseWriter, r *http.Request) {
+	renderHTMLPage(w, "update_name.html")
+}
 
 func renderHTMLPage(w http.ResponseWriter, page string) {
 	tmpl, err := template.ParseFiles(page)
@@ -122,6 +128,8 @@ func main() {
 	r.HandleFunc("/registration", registrationHTMLHandler).Methods("GET")
 	r.HandleFunc("/get_user", GetUserHTMLHandler).Methods("GET")
 	r.HandleFunc("/user/{id}", UserHTMLHandler).Methods("GET")
+	r.HandleFunc("/update_name", UpdateNameHTMLHandler).Methods("GET")
+	r.HandleFunc("/delete_user", DeleteUserHTMLHandler).Methods("Get")
 
 	r.HandleFunc("/create_user", CreateUserHandler).Methods("POST")
 	r.HandleFunc("/delete_user/{id}", DeleteUserHandler).Methods("POST")

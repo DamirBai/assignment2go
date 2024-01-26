@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete User</title>
+</head>
+<body>
+    <h1>Delete User</h1>
+
+    <form id="deleteUserForm">
+        <label for="userID">User ID:</label>
+        <input type="number" id="userID" name="userID" required><br>
+
+        <button type="button" onclick="deleteUser()">Delete User</button>
+    </form>
+
+    <div id="deleteMessage"></div>
+
+    <script>
+        function deleteUser() {
+            var userID = document.getElementById("userID").value;
+
+            fetch('/delete_user/' + userID, {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('deleteMessage').innerHTML = `<p>${data.message}</p>`;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

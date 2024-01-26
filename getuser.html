@@ -97,8 +97,9 @@
     }
     function getUserByID() {
         var userID = document.getElementById("userID").value;
+
         // Выполнить запрос к другой веб-странице
-        fetch('http://localhost:8080/user/{id}')
+        fetch('http://localhost:8080/user/' + userID)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -106,11 +107,24 @@
                 return response.json();
             })
             .then(data => {
-                document.getElementById('userInfo').innerHTML = `<p>${data.name}</p>`;
+                // Отобразить данные на текущей странице
+                displayUserData(data);
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
-        });
+            });
+    }
+
+    function displayUserData(data) {
+        // Получить контейнер для вывода данных
+        const userInfoContainer = document.getElementById('userInfo');
+
+        // Вывести данные в HTML
+        userInfoContainer.innerHTML = `
+            <p>ID: ${data.ID}</p>
+            <p>Name: ${data.Name}</p>
+            <p>Email: ${data.Email}</p>
+        `;
     }
 </script>
 </body>

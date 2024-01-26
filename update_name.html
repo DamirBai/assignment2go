@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User</title>
+</head>
+<body>
+    <h1>Update User</h1>
+
+    <form id="updateUserForm">
+        <label for="userID">User ID:</label>
+        <input type="number" id="userID" name="userID" required><br>
+        <label for="newName">New Name:</label>
+        <input type="text" id="newName" name="newName" required><br>
+        <label for="newEmail">New Email:</label>
+        <input type="email" id="newEmail" name="newEmail" required><br>
+
+        <button type="button" onclick="updateUser()">Update User</button>
+    </form>
+
+    <div id="updateMessage"></div>
+
+    <script>
+        function updateUser() {
+            var userID = document.getElementById("userID").value;
+            var newName = document.getElementById("newName").value;
+            var newEmail = document.getElementById("newEmail").value;
+
+            fetch('/update_name/' + userID, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "name": newName, "email": newEmail }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('updateMessage').innerHTML = `<p>${data.message}</p>`;
+            })
+        }
+    </script>
+</body>
+</html>
