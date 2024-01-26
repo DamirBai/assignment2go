@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="get-user">
-    <h1 onclick="toggleButton()">Get User by ID</h1>
+    <h1 onclick="getUserByID()">Get User by ID</h1>
 
     <form id="getUserForm">
         <label for="userID">User ID:</label>
@@ -42,26 +42,6 @@
 </div>
 
 <button type="button" onclick="getAllUsers()">Get All Users</button>
-
-<script>
-    function getUserByID() {
-        var userID = document.getElementById("userID").value;
-
-        fetch('/get_user/' + toString(parseInt(userID)), {
-            method: 'GET',
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById("userInfo").innerHTML = '<p>ID: ' + data.ID + '</p>' +
-                '<p>Name: ' + data.Name + '</p>' +
-                '<p>Email: ' + data.Email + '</p>';
-        })
-        .catch((error) => {
-            alert('Error getting user');
-            console.error('Error:', error);
-        });
-    }
-</script>
 <script>
     function getAllUsers() {
             fetch('/getAllUsers', {
@@ -113,6 +93,23 @@
         .catch((error) => {
             alert('Error updating user name');
             console.error('Error:', error);
+        });
+    }
+    function getUserByID() {
+        var userID = document.getElementById("userID").value;
+        // Выполнить запрос к другой веб-странице
+        fetch('http://localhost:8080/user/{id}')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('userInfo').innerHTML = `<p>${data.name}</p>`;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
         });
     }
 </script>

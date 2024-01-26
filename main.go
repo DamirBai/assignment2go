@@ -23,7 +23,7 @@ type User struct {
 var db *gorm.DB
 
 func InitializeDatabase() {
-	dsn := "user=postgres dbname=assignmentgo2 password=admin sslmode=disable"
+	dsn := "user=postgres dbname=auth password=admin sslmode=disable"
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -35,14 +35,6 @@ func registrationHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	renderHTMLPage(w, "registration.html")
 }
 func GetUserHTMLHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userID := vars["id"]
-
-	_, err := getUserByID(userID)
-	if err != nil {
-		http.Error(w, "Error getting user", http.StatusInternalServerError)
-		return
-	}
 	renderHTMLPage(w, "getuser.html")
 }
 
@@ -76,6 +68,52 @@ func renderGetHTMLPage(w http.ResponseWriter, page string, user User) {
 
 	tmpl.Execute(w, user)
 }
+func UpdateNameHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	vars := mux.Vars(r)
+	userID := vars["id"]
+	var updatedUser User
+	err := json.NewDecoder(r.Body).Decode(&updatedUser)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+	existingUser, err := getUserByID(userID)
+	if err != nil {
+		http.Error(w, "Error getting user", http.StatusInternalServerError)
+		return
+	}
+	existingUser.Name = updatedUser.Name
+
+	if err := db.Save(&existingUser).Error; err != nil {
+		http.Error(w, "Error updating user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "200", "message": "User updated successfully"})
+}
+
+func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	vars := mux.Vars(r)
+	userID := vars["id"]
+
+	if err := db.Delete(&User{}, userID).Error; err != nil {
+		http.Error(w, "Error deleting user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "200", "message": "User deleted successfully"})
+}
 func main() {
 	InitializeDatabase()
 	r := mux.NewRouter()
@@ -83,11 +121,11 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	r.HandleFunc("/registration", registrationHTMLHandler).Methods("GET")
 	r.HandleFunc("/get_user", GetUserHTMLHandler).Methods("GET")
-	r.HandleFunc("/get_user/{id}", UserHTMLHandler).Methods("GET")
+	r.HandleFunc("/user/{id}", UserHTMLHandler).Methods("GET")
 
 	r.HandleFunc("/create_user", CreateUserHandler).Methods("POST")
-	//r.HandleFunc("/delete_user", DeleteUserHandler).Methods("POST")
-	//r.HandleFunc("/update_name", UpdateNameHandler).Methods("POST")
+	r.HandleFunc("/delete_user/{id}", DeleteUserHandler).Methods("POST")
+	r.HandleFunc("/update_name/{id}", UpdateNameHandler).Methods("POST")
 	http.Handle("/", r)
 	fmt.Println("Server is running on port 8080...")
 	http.ListenAndServe(":8080", nil)

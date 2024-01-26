@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	github.com/lib/pq v1.10.9
-	gorm.io/gorm v1.25.5
+	gorm.io/gorm v1.25.6
 )
 
 require (
