@@ -5,6 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get User</title>
+    <style>
+        #user{
+            border: 2px solid black;
+        }
+    </style>
 </head>
 <body>
 <div id="get-user">
@@ -42,20 +47,24 @@
 </div>
 
 <button type="button" onclick="getAllUsers()">Get All Users</button>
+<h1>Users:</h1>
+<div id="allusers"></div>
 <script>
     function getAllUsers() {
-            fetch('/getAllUsers', {
-                method: 'GET',
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Users:\n' + JSON.stringify(data, null, 2));
-            })
-            .catch((error) => {
-                alert('Error getting users');
-                console.error('Error:', error);
-            });
-        }
+        fetch('/get_all_users', {
+            method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+            for(let i = 0; i < data.length; i++){
+                document.getElementById("allusers").innerHTML += `<div id="user"><p>ID: ${data[i].ID}</p><p>Name: ${data[i].Name}</p><p>Address: ${data[i].Address}</p><p>Age: ${data[i].Age}</p></div>`;
+            }
+        })
+        .catch((error) => {
+            alert('Error getting users');
+            console.error('Error:', error);
+        });
+    }
 </script>
 <script>
     function deleteUserByID() {

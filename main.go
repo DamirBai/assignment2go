@@ -4,12 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+)
+
+var (
+	log          = logrus.New()
+	requestLimit = rate.NewLimiter(rate.Every(time.Second), 5) // 5 requests per second
 )
 
 type User struct {
@@ -23,7 +31,7 @@ type User struct {
 var db *gorm.DB
 
 func InitializeDatabase() {
-	dsn := "user=postgres dbname=auth password=admin sslmode=disable"
+	dsn := "user=postgres dbname=assignmentgo2 password=admin sslmode=disable"
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -122,6 +130,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 func main() {
 	InitializeDatabase()
+	log.SetFormatter(&logrus.JSONFormatter{})
 	r := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
@@ -129,7 +138,8 @@ func main() {
 	r.HandleFunc("/get_user", GetUserHTMLHandler).Methods("GET")
 	r.HandleFunc("/user/{id}", UserHTMLHandler).Methods("GET")
 	r.HandleFunc("/update_name", UpdateNameHTMLHandler).Methods("GET")
-	r.HandleFunc("/delete_user", DeleteUserHTMLHandler).Methods("Get")
+	r.HandleFunc("/delete_user", DeleteUserHTMLHandler).Methods("GET")
+	r.HandleFunc("/get_all_users", GetAllUsersHandler).Methods("GET")
 
 	r.HandleFunc("/create_user", CreateUserHandler).Methods("POST")
 	r.HandleFunc("/delete_user/{id}", DeleteUserHandler).Methods("POST")
@@ -166,4 +176,64 @@ func getUserByID(userID string) (User, error) {
 		return User{}, result.Error
 	}
 	return user, nil
+}
+func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !requestLimit.Allow() {
+		http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		return
+	}
+	ageFilter := r.URL.Query().Get("age")
+	sortField := r.URL.Query().Get("sortField")
+	sortOrder := r.URL.Query().Get("sortOrder")
+	pageStr := r.URL.Query().Get("page")
+	itemsPerPageStr := r.URL.Query().Get("itemsPerPage")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 1
+	}
+
+	itemsPerPage, err := strconv.Atoi(itemsPerPageStr)
+	if err != nil {
+		itemsPerPage = 5
+	}
+
+	log.WithFields(logrus.Fields{
+		"ageFilter":    ageFilter,
+		"sortField":    sortField,
+		"sortOrder":    sortOrder,
+		"page":         page,
+		"itemsPerPage": itemsPerPage,
+	}).Info("GetAllUsersHandler invoked")
+
+	users, err := getAllUsers(ageFilter, sortField, sortOrder, page, itemsPerPage)
+	if err != nil {
+		log.WithError(err).Error("Error getting users")
+		http.Error(w, "Error getting users", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+}
+
+func getAllUsers(ageFilter, sortField, sortOrder string, page, itemsPerPage int) ([]User, error) {
+	var users []User
+	query := db
+	if ageFilter != "" {
+		query = query.Where("age = ?", ageFilter)
+	}
+	if sortField != "" && sortOrder != "" {
+		query = query.Order(fmt.Sprintf("%s %s", sortField, sortOrder))
+	}
+	offset := (page - 1) * itemsPerPage
+	query = query.Offset(offset).Limit(itemsPerPage)
+	result := query.Find(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return users, nil
 }
