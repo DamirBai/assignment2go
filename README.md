@@ -1,4 +1,4 @@
-# assignment2go
+# assignment3-4go
 need to add postgresql database
 ## query:
 ```postgresql
