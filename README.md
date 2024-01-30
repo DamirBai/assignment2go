@@ -1,5 +1,4 @@
 # assignment3-4go
-need to add postgresql database
 ## description
 simple project with registration system and manipulating with users db using postgresql queries through gorm
 ## Full name of creator:
